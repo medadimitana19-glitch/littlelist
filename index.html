@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f7f4" />
+    <meta name="description" content="Littlelist — a calm place to plan your day, keep notes, and make progress." />
+    <title>Littlelist — Your day, a little lighter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient--top" aria-hidden="true"></div>
+    <div class="ambient ambient--bottom" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Littlelist home">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none"><path d="M6.5 14.4 11.4 19l10-11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="14" cy="14" r="11.2" stroke="currentColor" stroke-width="1.2" opacity=".5"/></svg></span>
+        <span class="brand-copy"><span class="brand-title">littlelist</span><span class="brand-caption">one step at a time</span></span>
+      </a>
+      <div class="topbar-actions">
+        <span class="secure-pill" id="connection-pill"><span class="secure-dot"></span><span id="connection-label">Private by design</span></span>
+        <button class="icon-button settings-button" id="settings-button" type="button" aria-label="Connection settings" title="Connection settings" hidden><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" stroke-width="1.5"/><path d="m16 11.8 1.1.9-1.3 2.2-1.4-.5a6.3 6.3 0 0 1-1.1.7l-.3 1.5h-2.6l-.3-1.5a6.2 6.2 0 0 1-1.2-.7l-1.4.5-1.3-2.2 1.1-.9a5.8 5.8 0 0 1 0-1.4l-1.1-.9 1.3-2.2 1.4.5a6.3 6.3 0 0 1 1.1-.7l.3-1.5h2.6l.3 1.5a6.2 6.2 0 0 1 1.2.7l1.4-.5 1.3 2.2-1.1.9a5.8 5.8 0 0 1 0 1.4Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
+        <div class="user-chip" id="user-chip" hidden><span class="user-avatar" id="user-avatar">O</span><span class="user-email" id="user-email"></span><button class="sign-out-button" id="sign-out-button" type="button">Sign out</button></div>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="screen loading-screen" id="loading-screen" aria-live="polite">
+        <div class="loader" aria-hidden="true"></div><p>Getting your space ready…</p>
+      </section>
+
+      <section class="screen setup-screen" id="setup-screen" hidden>
+        <div class="setup-card">
+          <div class="setup-icon" aria-hidden="true">✦</div>
+          <p class="eyebrow">A ONE-TIME SETUP</p>
+          <h1>Let’s make this <span>your space.</span></h1>
+          <p class="setup-intro">Connect a Supabase project to turn on accounts and safely save each person’s tasks and notes.</p>
+          <ol class="setup-steps">
+            <li><span>1</span><div><strong>Create a Supabase project</strong><small>That’s where accounts and task data are stored.</small></div></li>
+            <li><span>2</span><div><strong>Set up the task tables</strong><small>Run the included <code>supabase/schema.sql</code> once in its SQL Editor.</small></div></li>
+            <li><span>3</span><div><strong>Paste the project details below</strong><small>Use the Project URL and its public publishable key.</small></div></li>
+          </ol>
+          <form class="connect-form" id="setup-form">
+            <label for="setup-url">Supabase project URL</label>
+            <input id="setup-url" name="url" type="url" placeholder="https://your-project.supabase.co" autocomplete="url" required />
+            <label for="setup-key">Publishable key <span>(sometimes called anon key)</span></label>
+            <input id="setup-key" name="key" type="password" placeholder="sb_publishable_…" autocomplete="off" required />
+            <p class="field-hint">This is the public browser key. Never use a secret or service_role key here.</p>
+            <p class="form-message" id="setup-message" role="status" aria-live="polite"></p>
+            <button class="primary-button wide-button" type="submit">Connect my project <span aria-hidden="true">→</span></button>
+          </form>
+          <a class="help-link" href="https://supabase.com/dashboard" target="_blank" rel="noreferrer">Open Supabase dashboard <span aria-hidden="true">↗</span></a>
+        </div>
+        <p class="setup-footnote"><span aria-hidden="true">🔒</span> Your publishable key is saved in this browser. Your task data stays protected by database rules.</p>
+      </section>
+
+      <section class="screen auth-screen" id="auth-screen" hidden>
+        <div class="auth-card">
+          <div class="auth-sun" aria-hidden="true">✳</div>
+          <p class="eyebrow">A CALMER KIND OF PRODUCTIVITY</p>
+          <h1 id="auth-title">Welcome back.</h1>
+          <p class="auth-intro" id="auth-intro">Sign in to pick up where you left off.</p>
+          <div class="auth-tabs" role="group" aria-label="Account action">
+            <button type="button" id="mode-login" class="auth-tab is-selected" aria-pressed="true">Log in</button>
+            <button type="button" id="mode-register" class="auth-tab" aria-pressed="false">Create account</button>
+          </div>
+          <form id="auth-form">
+            <label for="auth-email">Email address</label>
+            <input id="auth-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+            <label for="auth-password">Password</label>
+            <input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters" required />
+            <div id="confirm-password-wrap" hidden><label for="confirm-password">Confirm password</label><input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Type your password again" /></div>
+            <p class="form-message" id="auth-message" role="status" aria-live="polite"></p>
+            <button class="primary-button wide-button" id="auth-submit" type="submit">Log in <span aria-hidden="true">→</span></button>
+          </form>
+          <p class="auth-privacy"><span aria-hidden="true">🔐</span> Your account keeps your list private to you.</p>
+        </div>
+      </section>
+
+      <section class="screen dashboard-screen" id="dashboard-screen" hidden>
+        <div class="welcome-row">
+          <div><p class="eyebrow" id="today-label">YOUR DAY</p><h1 id="greeting">Good morning.</h1><p class="welcome-copy">One small step is still a step forward.</p></div>
+          <button class="primary-button add-task-button" id="add-task-button" type="button"><span aria-hidden="true">＋</span> Add a task</button>
+        </div>
+
+        <div class="stats-grid" aria-label="Your task summary">
+          <article class="stat-card stat-card--lavender"><div class="stat-icon" aria-hidden="true">✧</div><div><span class="stat-label">OPEN TASKS</span><strong class="stat-value" id="open-count">0</strong></div><span class="stat-detail" id="open-detail">ready when you are</span></article>
+          <article class="stat-card stat-card--peach"><div class="stat-icon" aria-hidden="true">◷</div><div><span class="stat-label">DUE TODAY</span><strong class="stat-value" id="today-count">0</strong></div><span class="stat-detail">a little at a time</span></article>
+          <article class="stat-card stat-card--mint"><div class="stat-icon" aria-hidden="true">✓</div><div><span class="stat-label">COMPLETED</span><strong class="stat-value" id="done-count">0</strong></div><span class="stat-detail">look at you go</span></article>
+        </div>
+
+        <div class="workspace-grid">
+          <aside class="sidebar" aria-label="Task views">
+            <p class="sidebar-label">YOUR LIST</p>
+            <nav class="view-nav" aria-label="Filter tasks by time and status">
+              <button class="view-button is-active" type="button" data-view="all" aria-pressed="true"><span class="view-icon">✧</span><span>All tasks</span><span class="view-count" id="nav-all-count">0</span></button>
+              <button class="view-button" type="button" data-view="today" aria-pressed="false"><span class="view-icon">◷</span><span>Today</span><span class="view-count" id="nav-today-count">0</span></button>
+              <button class="view-button" type="button" data-view="upcoming" aria-pressed="false"><span class="view-icon">↗</span><span>Upcoming</span><span class="view-count" id="nav-upcoming-count">0</span></button>
+              <button class="view-button" type="button" data-view="completed" aria-pressed="false"><span class="view-icon">✓</span><span>Completed</span><span class="view-count" id="nav-completed-count">0</span></button>
+            </nav>
+            <div class="sidebar-rule"></div>
+            <p class="sidebar-label category-heading">CATEGORIES</p>
+            <label class="visually-hidden" for="category-filter">Filter by category</label>
+            <select id="category-filter" class="category-filter">
+              <option value="all">All categories</option><option value="Personal">Personal</option><option value="Work">Work</option><option value="Study">Study</option><option value="Health">Health</option><option value="Shopping">Shopping</option><option value="Other">Other</option>
+            </select>
+            <div class="sidebar-tip"><span class="tip-icon" aria-hidden="true">✦</span><strong>Keep it kind.</strong><p>Your list is here to help, not to hurry you.</p></div>
+          </aside>
+
+          <section class="task-area" aria-label="Tasks">
+            <div class="task-area-header">
+              <div><p class="eyebrow" id="list-eyebrow">YOUR SPACE</p><h2 id="list-heading">All tasks <span id="heading-count">0</span></h2><p class="list-subtitle" id="list-subtitle">A little progress, at your pace.</p></div>
+              <span class="reorder-note" id="reorder-note"><span aria-hidden="true">↕</span> Move tasks with the arrows</span>
+            </div>
+            <div class="toolbar">
+              <label class="search-box"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7" stroke="currentColor" stroke-width="1.6"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="visually-hidden">Search tasks and notes</span><input id="task-search" type="search" placeholder="Search tasks or notes…" autocomplete="off" /></label>
+              <label class="filter-select"><span class="visually-hidden">Filter by priority</span><select id="priority-filter"><option value="all">Any priority</option><option value="high">High priority</option><option value="medium">Medium priority</option><option value="low">Low priority</option></select></label>
+            </div>
+            <div class="task-list-heading"><span><span class="list-dot"></span><span id="list-label">ALL TASKS</span></span><span class="task-count" id="visible-count">0</span></div>
+            <div class="task-list" id="task-list" aria-live="polite" aria-relevant="additions removals"></div>
+            <div class="empty-state" id="empty-state"><div class="empty-art" aria-hidden="true"><span>◌</span><i>✓</i><b>✦</b></div><h3 id="empty-title">A clear mind starts here.</h3><p id="empty-copy">Add a task above. It doesn’t have to be a big one.</p><button type="button" id="empty-add-button" class="text-button">Add your first task <span aria-hidden="true">→</span></button></div>
+          </section>
+        </div>
+        <footer class="page-footer"><span><span aria-hidden="true">✦</span> Small steps are still steps.</span><span>Littlelist</span></footer>
+      </section>
+    </main>
+
+    <dialog class="modal" id="task-dialog" aria-labelledby="task-dialog-title">
+      <form id="task-form" class="modal-form">
+        <div class="modal-heading"><div><p class="eyebrow">MAKE IT YOURS</p><h2 id="task-dialog-title">Add a task</h2></div><button type="button" class="modal-close" data-close="task-dialog" aria-label="Close">×</button></div>
+        <label for="task-title">Task name</label><input id="task-title" name="title" type="text" maxlength="140" placeholder="What would you like to do?" required />
+        <label for="task-notes">Notes <span>(optional)</span></label><textarea id="task-notes" name="notes" rows="4" maxlength="5000" placeholder="Add a few helpful details…"></textarea>
+        <div class="form-grid"><div><label for="task-category">Category</label><select id="task-category" name="category"><option>Personal</option><option>Work</option><option>Study</option><option>Health</option><option>Shopping</option><option>Other</option></select></div><div><label for="task-priority">Priority</label><select id="task-priority" name="priority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div></div>
+        <label for="task-due">Due date and time <span>(optional)</span></label><input id="task-due" name="dueAt" type="datetime-local" />
+        <p class="form-message" id="task-message" role="status" aria-live="polite"></p>
+        <div class="modal-actions"><button type="button" class="secondary-button" data-close="task-dialog">Cancel</button><button class="primary-button" id="task-save-button" type="submit">Save task <span aria-hidden="true">→</span></button></div>
+      </form>
+    </dialog>
+
+    <dialog class="modal modal--small" id="delete-dialog" aria-labelledby="delete-title">
+      <div class="confirm-content"><div class="confirm-icon" aria-hidden="true">×</div><p class="eyebrow">A QUICK CHECK</p><h2 id="delete-title">Delete this task?</h2><p>This removes the task and its notes from your list.</p><div class="modal-actions"><button type="button" class="secondary-button" data-close="delete-dialog">Keep task</button><button type="button" class="danger-button" id="confirm-delete">Delete task</button></div></div>
+    </dialog>
+
+    <dialog class="modal" id="connection-dialog" aria-labelledby="connection-title">
+      <form id="connection-form" class="modal-form">
+        <div class="modal-heading"><div><p class="eyebrow">PROJECT CONNECTION</p><h2 id="connection-title">Connection settings</h2></div><button type="button" class="modal-close" data-close="connection-dialog" aria-label="Close">×</button></div>
+        <p class="modal-copy">Use your project URL and public publishable key. Changing projects will sign you out of this one.</p>
+        <label for="settings-url">Supabase project URL</label><input id="settings-url" name="url" type="url" placeholder="https://your-project.supabase.co" required />
+        <label for="settings-key">Publishable key <span>(sometimes called anon key)</span></label><input id="settings-key" name="key" type="password" placeholder="sb_publishable_…" required />
+        <p class="form-message" id="connection-message" role="status" aria-live="polite"></p>
+        <div class="modal-actions"><button type="button" class="secondary-button" data-close="connection-dialog">Cancel</button><button class="primary-button" type="submit">Save connection <span aria-hidden="true">→</span></button></div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
