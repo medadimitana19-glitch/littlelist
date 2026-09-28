@@ -3,7 +3,8 @@
   const $ = (selector) => document.querySelector(selector);
   const screens = ['loading-screen', 'setup-screen', 'auth-screen', 'dashboard-screen'];
   const categories = ['Personal', 'Work', 'Study', 'Health', 'Shopping', 'Other'];
-  const configName = 'littlelist.supabase.config.v1';
+    const defaultConfig = { url: 'https://ucaeategyjiswgctewqf.supabase.co', key: 'sb_publishable_qQJUIb57qQFGpuNnKoU06w_hRKNLVgh' };
+const configName = 'littlelist.supabase.config.v1';
   let client = null;
   let config = null;
   let user = null;
@@ -45,13 +46,13 @@
   function readConfig() {
     try {
       const saved = JSON.parse(localStorage.getItem(configName) || 'null');
-      return saved && saved.url && saved.key ? saved : null;
+            return saved && saved.url && saved.key ? saved : defaultConfig;
     } catch (error) { return null; }
   }
   function makeClient(url, key) {
     if (!url.trim().startsWith('https://')) throw new Error('Use the full HTTPS Project URL from Supabase.');
     if (!window.supabase || !window.supabase.createClient) throw new Error('The sign-in library could not load. Check your internet connection and reload.');
-    return window.supabase.createClient(url.trim().replace(//$/, ''), key.trim(), { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+        return window.supabase.createClient(url.trim().replace(/\/$/, ''), key.trim(), { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
   }
   async function connect(url, key, messageId) {
     let next;
@@ -61,7 +62,7 @@
     } catch (error) { message(messageId, error.message); return; }
     message(messageId, 'Connecting…', true);
     if (client) await client.auth.signOut();
-    config = { url: url.trim().replace(//$/, ''), key: key.trim() };
+        config = { url: url.trim().replace(/\/$/, ''), key: key.trim() };
     localStorage.setItem(configName, JSON.stringify(config));
     client = next;
     user = null;
